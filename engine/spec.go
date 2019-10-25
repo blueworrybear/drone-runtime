@@ -4,6 +4,15 @@
 
 package engine
 
+import (
+	"io"
+	"os"
+	"os/exec"
+
+	"github.com/hpcloud/tail"
+	"golang.org/x/sync/errgroup"
+)
+
 type (
 	// Metadata provides execution metadata.
 	Metadata struct {
@@ -27,6 +36,8 @@ type (
 		// only used by the Docker and Kubernetes runtime
 		// drivers.
 		Docker *DockerConfig `json:"docker,omitempty"`
+
+		Lsf *LsfConfig `json:"lsf,omitempty"`
 
 		// Qemu-specific settings. These settings are only
 		// used by the qemu runtime driver.
@@ -58,6 +69,8 @@ type (
 		// only used by the Docker and Kubernetes runtime
 		// drivers.
 		Docker *DockerStep `json:"docker,omitempty"`
+		// LSF-spcific setting. Only used by IBM LSF driver
+		Lsf *LsfStep `json:"lsf,omitempty"`
 	}
 
 	// DockerAuth defines dockerhub authentication credentials.
@@ -87,6 +100,25 @@ type (
 		Privileged bool       `json:"privileged,omitempty"`
 		PullPolicy PullPolicy `json:"pull_policy,omitempty"`
 		User       string     `json:"user"`
+	}
+
+	// LsfConfig Configure a IBM lsf spec
+	LsfConfig struct {
+		Workdir string `json:"workdir,omitempty"`
+	}
+
+	// LsfStep Configure a IBM lsf step.
+	LsfStep struct {
+		Shell     *os.File `json:"shell,omitempty"`
+		ShellName string   `json:"shell_name,omitempty"`
+		ShellType string   `json:"shell_type,omitempty"`
+		Job       *exec.Cmd
+		TailFile  *tail.Tail
+		NetCat    *exec.Cmd
+		NetPipe   *io.PipeWriter
+		Running   bool   `json:"running,omitempty"`
+		JobName   string `json:"job_name,omitempty"`
+		WaitGroup errgroup.Group
 	}
 
 	// File defines a file that should be uploaded or
