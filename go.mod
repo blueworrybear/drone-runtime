@@ -53,3 +53,5 @@ require (
 )
 
 go 1.13
+
+replace github.com/drone/drone-runtime => github.com/blueworrybear/drone-runtime v1.1.1
